@@ -2,6 +2,11 @@
 """
 Guider.py
 Control of the guiding image acquisition and analysis
+
+TODO:
+something looks wrong with the run function.  I think it will trap us in the future.  Break it apart to separate functions.
+implement PID (P term only) code
+
 """
 
 __author__ = ["Courtney Johnson", "Adrian Davila"]
@@ -21,25 +26,26 @@ from astropy.io import fits
 import subprocess
 from camera import *
 import thread
-import pyfits
 from logger import *
 
 class Guider(object):
 
     def __init__(self):
-        self.ref=[]
-        self.refName = None
-        self.quit = False
-	self.expTime = .5
-	self.readoutOffset = 0
-        self.c = CameraExpose()
-        self.l = Logger()
-        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/'
-        self.fakeOut = True
-        self.currentImage = 2
-        self.logType = 'guider'
+        self.ref= None  #coordinate array for reference image, starts empty
+        self.refName = None #name of reference image
+        self.quit = False #tells program to stop running, changed via start/stopGuiding set functions
+	self.expTime = .5 #exposure time given to camera for iamges
+	self.readoutOffset = 0 #um?
+        self.c = CameraExpose() #
+        self.l = Logger() #Logger class creates logfile of processes
+        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' 
+        self.fakeOut = True #variable to tell class to guide on fake data already in directory
+        self.currentImage = 2 #?
+        self.logType = 'guider' #parameter for Logger class?
+        self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
+	self.takeRef = False #variable can be set to True to get a new reference image taken
 
-    def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None):
+    def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
         if self.fakeOut != True:
             im = self.c.expose(imgName, imExp, imDir)
             self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
@@ -50,9 +56,11 @@ class Guider(object):
         else:
             return 3
 
-    def analyze(self,fits):
+    #uses PyGuide function findStars on iamge to get coordinates of all stars in field, stores 
+    #coordinates in an array
+    def analyze(self,im): 
         output=[]
-        hdulist = pyfits.open(fits)
+        hdulist = fits.open(im)
         data = hdulist[0].data
 
         ccd = PyGuide.CCDInfo(200,21.3,1.6) #Since we're using it on one CCD, these should be constants
@@ -72,6 +80,9 @@ class Guider(object):
             output.append(star_out)
         return output
 
+    #Takes the coordinate array from analyze and finds the difference between these coordinates
+    #and those for the reference image, to get x and y offsets to give to the telescope
+		#do we need to do anything here to convert this to RA and dec?
     def getOffset(self, imCoords):
         self.l.logStr('OffsetInput\t'+str(self.ref)+'\t'+str(imCoords), self.logType)
         x = self.ref[1]
@@ -80,15 +91,18 @@ class Guider(object):
         yy = imCoords[2]
         xoff = xx - x
         yoff = yy - y
+        if np.abs(xoff) > float(self.thres) and np.abs(yoff) > float(self.thres):
+            self.quit = True
+            print 'stopped guiding becuase offset is too large'
+            return
         return xoff, yoff
 
-    def coordCompare(self,c0 , c1, thres):
-        print c0[1] - c1[1], c0[2] - c1[2]
+    def coordCompare(self, c0, c1, thres):
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
-            self.quit == True
+            self.quit = True
+            print 'too far off'
         else:
             return True
-
 
     def test(self):
 	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
@@ -97,50 +111,60 @@ class Guider(object):
 	print self.analyze(self.refName)
 	return
 
-    def run(self):
-        self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
+    def takeRef(self)
+	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
         if self.fakeOut == True:
             self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
             self.currentImage = self.currentImage +1
             self.l.logStr('FakeImage\t%s' % str(self.refName), self.logType)
-	self.takeImage('image', self.refName,self.expTime) 
+        self.takeImage('image', self.refName,self.expTime)
         refOptions = self.analyze(self.refName)
-        print refOptions
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
-        print self.ref
 
+
+    return
+
+
+    def run(self):
+	if self.takeRef == True or self.ref == None: #if you want a new ref image, this will be True
+	    self.takeRef(self)	
         while (self.quit != True):
-            imName = time.strftime("%Y%m%dT%H%M%S.fits")
-            self.takeImage('image',imName,self.expTime)
-            time.sleep(float(self.expTime) + self.readoutOffset)
-            if self.fakeOut:
+            self.l.logStr('GuidingStarted', self.logType)
+            imName = time.strftime("%Y%m%dT%H%M%S.fits")    #take image
+            self.takeImage('image',imName,self.expTime) 
+            time.sleep(float(self.expTime) + self.readoutOffset) #sleep while reading out 
+            if self.fakeOut: #fakeout?
                 imName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
                 self.currentImage = self.currentImage +1
                 self.l.logStr('FakeImage\t%s' % str(imName), self.logType)
             coords = self.analyze(imName)
-            for star in coords:
-                if self.coordCompare(self.ref, star, 30):
+            for star in coords: #find the new coordinates of the reference star by matching coordinates within
+                if self.coordCompare(self.ref, star, 30): #some passed threshold
                     foundStar = star
                     break
             self.l.logStr('ReferenceStar\t%s' % str(foundStar), self.logType)
             offsetx, offsety = self.getOffset(foundStar)
-            print offsetx, offsety
+            print 'dRA, dDEC: %.2f, %.2f' % (float(offsetx), float(offsety))
             self.l.logStr('Offset\t'+str([offsetx, offsety]), self.logType)
-        print 'guiding stopped'
+        self.l.logStr('GuidingStopped', self.logType)
 	return
 
     def startGuiding(self):
         self.quit = True
         thread.start_new_thread(self.run,())
 	return
-
+    
     def stopGuiding(self):
         self.quit = False
 	return	
 
     def updateExpTime(self, time):
 	self.expTime = time
+	return
+
+    def setTakeRef(self):
+	self.takeRef = True
 	return
 
 #write in dummy functions for rotation and focus
