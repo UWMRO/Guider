@@ -22,25 +22,33 @@ import subprocess
 from camera import *
 import thread
 import pyfits
+from logger import *
 
 class Guider(object):
 
     def __init__(self):
         self.ref=[]
-        self.refName = ""
-        self.startGuiding = True
+        self.refName = None
         self.quit = False
 	self.expTime = .5
 	self.readoutOffset = 0
         self.c = CameraExpose()
+        self.l = Logger()
+        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/'
+        self.fakeOut = True
+        self.currentImage = 2
+        self.logType = 'guider'
 
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None):
-        im = self.c.expose(imgName, imExp, imDir)
-        print "Takes image with camera, and saves it to the current directory"
-        if im == True:
-            return
+        if self.fakeOut != True:
+            im = self.c.expose(imgName, imExp, imDir)
+            self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
+            if im == True:
+                return
+            else:
+                raise Exception
         else:
-            raise Exception
+            return 3
 
     def analyze(self,fits):
         output=[]
@@ -50,8 +58,7 @@ class Guider(object):
         ccd = PyGuide.CCDInfo(200,21.3,1.6) #Since we're using it on one CCD, these should be constants
         ctr,imstat = PyGuide.findStars(data,None,None,ccd,1,False)[0:2] #need to choose mask here
 
-
-        size= len(ctr)-1
+        size= len(ctr)
         xcoord = ['XCoord']
         ycoord = ['YCoord']
         names = ['StarName']
@@ -61,28 +68,24 @@ class Guider(object):
             ycoord = ctr[x].xyCtr[1]
             name = x
             star_out = [name, xcoord, ycoord]
-            print star_out
+            self.l.logStr('StarPos\t'+str(star_out), self.logType)
             output.append(star_out)
-
-        #print "Running PyGuide.findStars on img to get coordinates of 0th star in list"
         return output
 
     def getOffset(self, imCoords):
-        print self.ref[0]
-        print imCoords[0]
+        self.l.logStr('OffsetInput\t'+str(self.ref)+'\t'+str(imCoords), self.logType)
         x = self.ref[1]
         y = self.ref[2]
         xx = imCoords[1]
         yy = imCoords[2]
         xoff = xx - x
         yoff = yy - y
-        print "Finding offset between position of star 0 in current image and reference image"
         return xoff, yoff
 
     def coordCompare(self,c0 , c1, thres):
         print c0[1] - c1[1], c0[2] - c1[2]
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
-            raise Exception
+            self.quit == True
         else:
             return True
 
@@ -96,33 +99,34 @@ class Guider(object):
 
     def run(self):
         self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
-        print 'taking reference image %s' % self.refName
+        if self.fakeOut == True:
+            self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
+            self.currentImage = self.currentImage +1
+            self.l.logStr('FakeImage\t%s' % str(self.refName), self.logType)
 	self.takeImage('image', self.refName,self.expTime) 
         refOptions = self.analyze(self.refName)
-        print 'reference coords are (singluar selection, not robust): '
+        print refOptions
+        # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
         print self.ref
 
-        #for x in range(0,1):
         while (self.quit != True):
-
-        #this is going to end up being a while loop for while(self.startGuiding == True) , which I think is controlled by the GUI.... or something
-        # how do we knwo that the 0th image will always be the same?  Maybe create a threshold parameter.
-
             imName = time.strftime("%Y%m%dT%H%M%S.fits")
             self.takeImage('image',imName,self.expTime)
             time.sleep(float(self.expTime) + self.readoutOffset)
+            if self.fakeOut:
+                imName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
+                self.currentImage = self.currentImage +1
+                self.l.logStr('FakeImage\t%s' % str(imName), self.logType)
             coords = self.analyze(imName)
             for star in coords:
-                print star
                 if self.coordCompare(self.ref, star, 30):
                     foundStar = star
                     break
-            print 'this is the start that corresponds to the ref star'
-            print foundStar
+            self.l.logStr('ReferenceStar\t%s' % str(foundStar), self.logType)
             offsetx, offsety = self.getOffset(foundStar)
             print offsetx, offsety
-            #print "Returning offset to telescope to drive it some way we haven't figured out yet"
+            self.l.logStr('Offset\t'+str([offsetx, offsety]), self.logType)
         print 'guiding stopped'
 	return
 
