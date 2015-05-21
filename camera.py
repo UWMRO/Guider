@@ -10,12 +10,10 @@ import subprocess
 import time
 
 class CameraExpose(object):
-    def __init__(self, name, exp):
-        self.name = name
-        self.exp = exp
+    def __init__(self):
         self.wait = 3.0
 
-    def expose(self):
+    def expose(self, name, exp):
         try:
             # =========================================
             # Run camera routine
@@ -25,7 +23,7 @@ class CameraExpose(object):
 
             # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
             # Can also use './camera test 0 0' to check camera.
-            subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', self.exp])
+            subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp)])
 
             # Pause for the camera to run
             time.sleep(self.wait+(int(expose)/1000))
@@ -50,7 +48,7 @@ class CameraExpose(object):
             # Need to add
 
             # Write the image and header to a FITS file using variable name.
-            hdulist.writeto(name+'.fits')
+            hdulist.writeto(str(name)+'.fits')
 
             print "Camera and FITS routines complete" 
             return 1
