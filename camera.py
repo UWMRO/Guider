@@ -31,10 +31,11 @@ class CameraExpose(object):
         output whether the image was successful
         """
         
-        if '.fit' in name:
-            pass
-        else:
+        if '.fit' not in name:
+        #    pass
+        #else:
             name = name+'.fits'
+        name = dir+'/'+str(name)
 
         if dir == None:
             dir = os.getcwd()
@@ -66,9 +67,9 @@ class CameraExpose(object):
 
             # Write the image and header to a FITS file using variable name.
 
-            #os.system('rm %s/test.fits' % dir)
-            time.sleep(1)
-            hdulist.writeto(dir+'/'+(str(name)))
+            name = 
+            selfcheckFile(
+            hdulist.writeto((str(name)))
 
             print "Camera and FITS routines complete" 
             return True
@@ -76,6 +77,13 @@ class CameraExpose(object):
             print "failed"
             print str(e)
             return False
+
+    def checkFile(self, fileName):
+        if os.path.exists(fileName):
+            print fileName
+            print 'file exists, deleting'
+            os.system('rm %s' % fileName)
+            return
 
     def createHeader(self):
         prihdr = pyfits.Header()
