@@ -67,9 +67,8 @@ class CameraExpose(object):
 
             # Write the image and header to a FITS file using variable name.
 
-            name = 
-            selfcheckFile(
-            hdulist.writeto((str(name)))
+            selfcheckFile(name)
+            hdulist.writeto(name)
 
             print "Camera and FITS routines complete" 
             return True
