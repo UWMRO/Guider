@@ -19,17 +19,26 @@ import subprocess
 import time
 import os
 import Image
+import thread
 
 class CameraExpose(object):
     def __init__(self):
         self.wait = 1.0
         self.status = None
+        self.statusDict{1:'idle', 2:'expose', 3:'reading'}
 
     def expose(self, name, exp, dir):
+        thread.start_new_thread(self.runExpose, (name, exp, dir))
+
+    def runExpose(self, name, exp, dir):
         """
         Connect to the OpenSSAG and take image
         input a given file name and exposure
         output whether the image was successful
+
+        
+        Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
+        Can also use './camera test 0 0' to check camera.
         """
         
         if dir == None:
@@ -41,17 +50,13 @@ class CameraExpose(object):
        
         try:
             
-            # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
-            # Can also use './camera test 0 0' to check camera.
             #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
-
+            self.status = 2
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
-
-            #==============================================
-            # Open binary file from camera as a numpy array
-            # =============================================
-            binary=np.fromfile('binary',dtype='u1').reshape(1280,1024)
+            self.status = 1
+           
+            binary=np.fromfile('binary',dtype='u1').reshape(1280,1024)   # Open binary file from camera as a numpy array
 
             # --------------------------
             # Used for testing array procedure, can remove once program is tested on-sky.
@@ -71,7 +76,7 @@ class CameraExpose(object):
             im.save("tmp.jpg")
             
 
-            print "Camera and FITS routines complete" 
+            #print "Camera and FITS routines complete" 
             return True
         except Exception,e:
             print "failed"
@@ -80,9 +85,9 @@ class CameraExpose(object):
 
     def checkFile(self, fileName):
         if os.path.exists(fileName):
-            print '%s exists, appending unique date stamp' % fileName
+            #print '%s exists, appending unique date stamp' % fileName
             name = fileName.replace('.fits','')+time.strftime('_%Y%m%dT%H%M%S.fits')
-            print 'New filename is %s' % name
+            #print 'New filename is %s' % name
             return name
         else:
             return fileName
@@ -101,7 +106,7 @@ class CameraExpose(object):
 
     def checkStatus(self):
         print "return some status message"
-        self.status = False
+        print self.status, self.statusDict[self.status]
         return self.status
 
     def checkConnection(self):
