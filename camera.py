@@ -18,7 +18,7 @@ import pyfits
 import subprocess
 import time
 import os
-import Image
+#import Image
 import thread
 from logger import *
 
@@ -75,8 +75,8 @@ class CameraExpose(object):
             # Write the image and header to a FITS file using variable name.
             name = self.checkFile(name)
             hdulist.writeto(name)
-            im = Image.fromarray(binary)
-            im.save("tmp.jpg")
+            #im = Image.fromarray(binary)
+            #im.save("tmp.jpg")
             
             self.l.logStr('SaveIm\t%s' % name)
             return True

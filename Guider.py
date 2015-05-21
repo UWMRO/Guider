@@ -2,6 +2,11 @@
 """
 Guider.py
 Control of the guiding image acquisition and analysis
+
+TODO:
+something looks wrong with the run function.  I think it will trap us in the future.  Break it apart to separate functions.
+implement PID (P term only) code
+
 """
 
 __author__ = ["Courtney Johnson", "Adrian Davila"]
@@ -21,7 +26,6 @@ from astropy.io import fits
 import subprocess
 from camera import *
 import thread
-import pyfits
 from logger import *
 
 class Guider(object):
@@ -50,9 +54,9 @@ class Guider(object):
         else:
             return 3
 
-    def analyze(self,fits):
+    def analyze(self,im):
         output=[]
-        hdulist = pyfits.open(fits)
+        hdulist = fits.open(im)
         data = hdulist[0].data
 
         ccd = PyGuide.CCDInfo(200,21.3,1.6) #Since we're using it on one CCD, these should be constants
