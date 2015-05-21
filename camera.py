@@ -31,14 +31,16 @@ class CameraExpose(object):
         output whether the image was successful
         """
         
+        if dir == None:
+            dir = os.getcwd()
+
         if '.fit' not in name:
         #    pass
         #else:
             name = name+'.fits'
         name = dir+'/'+str(name)
 
-        if dir == None:
-            dir = os.getcwd()
+
         
         try:
             
