@@ -31,7 +31,7 @@ class CameraExpose(object):
         output whether the image was successful
         """
         
-        exp = float(exp) / 1000.0  #convert to seconds
+        exp = float(exp) * 1000.0  #convert to milli-seconds
         
         if '.fit' in name:
             pass
