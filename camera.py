@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-Camera.py
+camera.py
 Camera imaging and fits routines using input from camera.cpp
 """
 
@@ -18,6 +18,7 @@ import pyfits
 import subprocess
 import time
 import os
+import Image
 
 class CameraExpose(object):
     def __init__(self):
@@ -66,6 +67,9 @@ class CameraExpose(object):
             # Write the image and header to a FITS file using variable name.
             name = self.checkFile(name)
             hdulist.writeto(name)
+            im = Image.fromarray(binary)
+            im.save("tmp.jpg")
+            
 
             print "Camera and FITS routines complete" 
             return True
