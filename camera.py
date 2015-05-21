@@ -86,7 +86,7 @@ class CameraExpose(object):
             #os.system('rm %s' % fileName)
             return fileName.rstrip('.fits')+time.strftime('_%Y%m%dT%H%M%S.fits')
         else:
-            return name
+            return fileName
 
     def createHeader(self):
         prihdr = pyfits.Header()
