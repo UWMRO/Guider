@@ -17,25 +17,38 @@ import numpy as np
 import pyfits
 import subprocess
 import time
+import os
 
 class CameraExpose(object):
     def __init__(self):
-        self.wait = 3.0
+        self.wait = 1.0
+        self.status = None
 
-    def expose(self, name, exp):
+    def expose(self, name, exp, dir):
+        """
+        Connect to the OpenSSAG and take image
+        input a given file name and exposure
+        output whether the image was successful
+        """
+        
+        exp = float(exp) / 1000.0  #convert to seconds
+        
+        if '.fit' in name:
+            pass
+        else:
+            name = name+'.fits'
+
+        if dir == None:
+            dir = os.getcwd()
+        
         try:
-            # =========================================
-            # Run camera routine
-            # =========================================
-            #name = "basic"
-            #expose = "4000"
-
+            
             # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
             # Can also use './camera test 0 0' to check camera.
             subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp)])
 
-            # Pause for the camera to run
-            time.sleep(self.wait+(int(expose)/1000))
+            #Pause for the camera to run
+            time.sleep(self.wait+float(exp))
 
             #==============================================
             # Open binary file from camera as a numpy array
@@ -49,27 +62,44 @@ class CameraExpose(object):
             # print binary
             # ---------------------------
 
-            # Create a primary header file for the FITS image
-            hdu=pyfits.PrimaryHDU(binary)
+            prihdr = self.createHeader()  #create emtpy header information
+            hdu=pyfits.PrimaryHDU(binary, header = prihdr)  #create a primary header file for the FITS image
             hdulist=pyfits.HDUList([hdu])
 
-            # Add time, exposure length, and file name to header.
-            # Need to add
-
             # Write the image and header to a FITS file using variable name.
-            hdulist.writeto(str(name)+'.fits')
+
+            #os.system('rm %s/test.fits' % dir)
+            time.sleep(1)
+            hdulist.writeto(dir+'/'+(str(name)))
 
             print "Camera and FITS routines complete" 
-            return 1
-        except:
+            return True
+        except Exception,e:
             print "failed"
-            return 0
+            print str(e)
+            return False
 
-    def status(self):
+    def createHeader(self):
+        prihdr = pyfits.Header()
+        prihdr['COMMENT'] = 'MRO Guider Camera'
+        prihdr['COMMENT'] = 'Orion Star Shoot Auto Guider'
+        prihdr['IMAGTYP'] = None
+        prihdr['EXPTIME'] = None
+        prihdr['CCDBIN1'] = 1
+        prihdr['CCDBIN2'] = 1
+        prihdr['GAIN'] = None
+        prihdr['RN'] = None
+        return prihdr
+
+    def checkStatus(self):
         print "return some status message"
-        return 0
+        self.status = False
+        return self.status
 
     def help(self):
         print __doc__
-        print __author__
         return
+
+if __name__=="__main__":
+    c = CameraExpose()
+    c.expose('test.fits',1, None)
