@@ -35,13 +35,9 @@ class CameraExpose(object):
             dir = os.getcwd()
 
         if '.fit' not in name:
-        #    pass
-        #else:
             name = name+'.fits'
         name = dir+'/'+str(name)
-
-
-        
+       
         try:
             
             # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
@@ -68,7 +64,6 @@ class CameraExpose(object):
             hdulist=pyfits.HDUList([hdu])
 
             # Write the image and header to a FITS file using variable name.
-
             name = self.checkFile(name)
             hdulist.writeto(name)
 
@@ -105,10 +100,17 @@ class CameraExpose(object):
         self.status = False
         return self.status
 
+    def checkConnection(self):
+        try:
+            subprocess.Popen(['/home/linaro/Camera/camera', '0', '0', '0'])
+        except Exception, e:
+            print e
+
+
     def help(self):
         print __doc__
         return
 
 if __name__=="__main__":
     c = CameraExpose()
-    c.expose('test.fits',1, None)
+    c.expose('test',1, None)
