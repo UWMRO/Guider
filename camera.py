@@ -31,8 +31,6 @@ class CameraExpose(object):
         output whether the image was successful
         """
         
-        exp = float(exp) * 1000.0  #convert to milli-seconds
-        
         if '.fit' in name:
             pass
         else:
@@ -45,7 +43,7 @@ class CameraExpose(object):
             
             # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
             # Can also use './camera test 0 0' to check camera.
-            subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp)])
+            subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
 
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
