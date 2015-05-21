@@ -20,9 +20,11 @@ import time
 import os
 import Image
 import thread
+from logger import *
 
 class CameraExpose(object):
     def __init__(self):
+        self.l = Logger()
         self.wait = 1.0
         self.status = None
         self.statusDict = {1:'idle', 2:'expose', 3:'reading'}
@@ -50,6 +52,7 @@ class CameraExpose(object):
        
         try:
             
+            self.l.logStr(str('Expose\t/home/linaro/Camera/camera image binary %s' % (str(exp * 1000))), self.logType)
             #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
             self.status = 2
             #Pause for the camera to run
@@ -75,9 +78,9 @@ class CameraExpose(object):
             im = Image.fromarray(binary)
             im.save("tmp.jpg")
             
-
-            #print "Camera and FITS routines complete" 
+            self.l.logStr('SaveIm\t%s' % name)
             return True
+
         except Exception,e:
             print "failed"
             print str(e)
