@@ -4,6 +4,15 @@
 Camera imaging and fits routines using input from camera.cpp
 """
 
+__author__ = "John Armstrong"
+__copyright__ = "NA"
+__credits__ = ["Joseph Huehnerhoff"]
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "NA"
+__email__ = "NA"
+__status__ = "Developement"
+
 import numpy as np
 import pyfits
 import subprocess
@@ -59,3 +68,7 @@ class CameraExpose(object):
     def status(self):
         print "return some status message"
         return 0
+
+    def help(self):
+        print __doc__
+        return
