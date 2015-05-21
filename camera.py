@@ -25,7 +25,7 @@ class CameraExpose(object):
     def __init__(self):
         self.wait = 1.0
         self.status = None
-        self.statusDict{'1':'idle', '2':'expose', '3':'reading'}
+        self.statusDict = {1:'idle', 2:'expose', 3:'reading'}
 
     def expose(self, name, exp, dir):
         thread.start_new_thread(self.runExpose, (name, exp, dir))
