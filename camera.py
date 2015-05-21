@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
- Camera.py
+Camera.py
 Camera imaging and fits routines using input from camera.cpp
 """
 
@@ -71,4 +71,5 @@ class CameraExpose(object):
 
     def help(self):
         print __doc__
+        print __author__
         return
