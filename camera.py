@@ -46,7 +46,7 @@ class CameraExpose(object):
             
             # Tells camera to take an image, it will output a binary file named "test" with 1000 ms exposure.
             # Can also use './camera test 0 0' to check camera.
-            subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
+            #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
 
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
@@ -81,10 +81,10 @@ class CameraExpose(object):
 
     def checkFile(self, fileName):
         if os.path.exists(fileName):
-            print fileName
-            print 'file exists, deleting'
-            #os.system('rm %s' % fileName)
-            return fileName.rstrip('.fits')+time.strftime('_%Y%m%dT%H%M%S.fits')
+            print '%s exists, appending unique date stamp' % fileName
+            name = fileName.replace('.fits','')+time.strftime('_%Y%m%dT%H%M%S.fits')
+            print 'New filename is %s' % name
+            return name
         else:
             return fileName
 
