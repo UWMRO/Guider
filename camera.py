@@ -83,8 +83,8 @@ class CameraExpose(object):
         if os.path.exists(fileName):
             print fileName
             print 'file exists, deleting'
-            os.system('rm %s' % fileName)
-            return filename.rstrip('.fits')+time.strftime('_%Y%m%dT%H%M%S.fits')
+            #os.system('rm %s' % fileName)
+            return fileName.rstrip('.fits')+time.strftime('_%Y%m%dT%H%M%S.fits')
         else:
             return name
 
