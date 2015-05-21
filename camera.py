@@ -69,7 +69,7 @@ class CameraExpose(object):
 
             # Write the image and header to a FITS file using variable name.
 
-            self.checkFile(name)
+            name = self.checkFile(name)
             hdulist.writeto(name)
 
             print "Camera and FITS routines complete" 
@@ -84,7 +84,9 @@ class CameraExpose(object):
             print fileName
             print 'file exists, deleting'
             os.system('rm %s' % fileName)
-            return
+            return filename.rstrip('.fits')+time.strftime('_%Y%m%dT%H%M%S.fits')
+        else:
+            return name
 
     def createHeader(self):
         prihdr = pyfits.Header()
