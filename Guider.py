@@ -42,6 +42,7 @@ class Guider(object):
         self.fakeOut = True
         self.currentImage = 2
         self.logType = 'guider'
+        self.thres = 30
 
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None):
         if self.fakeOut != True:
@@ -84,15 +85,18 @@ class Guider(object):
         yy = imCoords[2]
         xoff = xx - x
         yoff = yy - y
+        if np.abs(xoff) > float(self.thres) and np.abs(yoff) > float(self.thres):
+            self.quit = True
+            print 'stopped guiding becuase offset is too large'
+            return
         return xoff, yoff
 
-    def coordCompare(self,c0 , c1, thres):
-        print c0[1] - c1[1], c0[2] - c1[2]
+    def coordCompare(self, c0, c1, thres):
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
-            self.quit == True
+            self.quit = True
+            print 'too far off'
         else:
             return True
-
 
     def test(self):
 	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
@@ -109,12 +113,11 @@ class Guider(object):
             self.l.logStr('FakeImage\t%s' % str(self.refName), self.logType)
 	self.takeImage('image', self.refName,self.expTime) 
         refOptions = self.analyze(self.refName)
-        print refOptions
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
-        print self.ref
 
         while (self.quit != True):
+            self.l.logStr('GuidingStarted', self.logType)
             imName = time.strftime("%Y%m%dT%H%M%S.fits")
             self.takeImage('image',imName,self.expTime)
             time.sleep(float(self.expTime) + self.readoutOffset)
@@ -129,9 +132,9 @@ class Guider(object):
                     break
             self.l.logStr('ReferenceStar\t%s' % str(foundStar), self.logType)
             offsetx, offsety = self.getOffset(foundStar)
-            print offsetx, offsety
+            print 'dRA, dDEC: %.2f, %.2f' % (float(offsetx), float(offsety))
             self.l.logStr('Offset\t'+str([offsetx, offsety]), self.logType)
-        print 'guiding stopped'
+        self.l.logStr('GuidingStopped', self.logType)
 	return
 
     def startGuiding(self):

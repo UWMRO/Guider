@@ -72,6 +72,8 @@ class CameraExpose(object):
             hdu=pyfits.PrimaryHDU(binary, header = prihdr)  #create a primary header file for the FITS image
             hdulist=pyfits.HDUList([hdu])
 
+            prihdr['EXPTIME'] = str(exp)
+            prihdr['IMAGTYP'] = 'guide'
             # Write the image and header to a FITS file using variable name.
             name = self.checkFile(name)
             hdulist.writeto(name)
