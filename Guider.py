@@ -31,7 +31,7 @@ from logger import *
 class Guider(object):
 
     def __init__(self):
-        self.ref=[]
+        self.ref= None
         self.refName = None
         self.quit = False
 	self.expTime = .5
@@ -43,6 +43,7 @@ class Guider(object):
         self.currentImage = 2
         self.logType = 'guider'
         self.thres = 30
+	self.takeRef = False
 
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None):
         if self.fakeOut != True:
@@ -105,29 +106,36 @@ class Guider(object):
 	print self.analyze(self.refName)
 	return
 
-    def run(self):
-        self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
+    def takeRef(self)
+	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
         if self.fakeOut == True:
             self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
             self.currentImage = self.currentImage +1
             self.l.logStr('FakeImage\t%s' % str(self.refName), self.logType)
-	self.takeImage('image', self.refName,self.expTime) 
+        self.takeImage('image', self.refName,self.expTime)
         refOptions = self.analyze(self.refName)
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
 
+
+    return
+
+
+    def run(self):
+	if self.takeRef == True or self.ref == None: #if you want a new ref image, this will be True
+	    self.takeRef(self)	
         while (self.quit != True):
             self.l.logStr('GuidingStarted', self.logType)
-            imName = time.strftime("%Y%m%dT%H%M%S.fits")
-            self.takeImage('image',imName,self.expTime)
-            time.sleep(float(self.expTime) + self.readoutOffset)
-            if self.fakeOut:
+            imName = time.strftime("%Y%m%dT%H%M%S.fits")    #take image
+            self.takeImage('image',imName,self.expTime) 
+            time.sleep(float(self.expTime) + self.readoutOffset) #sleep while reading out 
+            if self.fakeOut: #fakeout?
                 imName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
                 self.currentImage = self.currentImage +1
                 self.l.logStr('FakeImage\t%s' % str(imName), self.logType)
             coords = self.analyze(imName)
-            for star in coords:
-                if self.coordCompare(self.ref, star, 30):
+            for star in coords: #find the new coordinates of the reference star by matching coordinates within
+                if self.coordCompare(self.ref, star, 30): #some passed threshold
                     foundStar = star
                     break
             self.l.logStr('ReferenceStar\t%s' % str(foundStar), self.logType)
@@ -141,13 +149,17 @@ class Guider(object):
         self.quit = True
         thread.start_new_thread(self.run,())
 	return
-
+    
     def stopGuiding(self):
         self.quit = False
 	return	
 
     def updateExpTime(self, time):
 	self.expTime = time
+	return
+
+    def setTakeRef(self):
+	self.takeRef = True
 	return
 
 #write in dummy functions for rotation and focus
