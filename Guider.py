@@ -99,7 +99,10 @@ class Guider(object):
             return
         return xoff, yoff
 
-    def coordCompare(self, c0, c1, thres):
+   
+#goes through coordinate list for current image and finds new coordinates of guide star (chosen in ref image)
+#by comparing coordinates and matching within some given threshole
+     def coordCompare(self, c0, c1, thres): 
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
             self.quit = True
             print 'too far off'
@@ -113,9 +116,12 @@ class Guider(object):
 	print self.analyze(self.refName)
 	return
 
+#takes a new reference image. This the coordinate of objects in this image will serve as the target for guiding
+#this function creates a name for the reference image and saves it, takes the image, analyzes it, and saves the
+#coordinate list for that image. It then sets the guide star to be the star at the 0th spot in the coordinate array
     def takeRef(self)
 	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
-        if self.fakeOut == True:
+        if self.fakeOut == True: #if has been told to guide on fake data that already exists in the directory, goes into this loop
             self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
             self.currentImage = self.currentImage +1
             self.l.logStr('FakeImage\t%s' % str(self.refName), self.logType)
@@ -123,12 +129,10 @@ class Guider(object):
         refOptions = self.analyze(self.refName)
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
-
-
     return
 
-
-    def run(self):
+#does literally everything -- come up with a good explanation for this, but first we need to break it up
+    def run(self): 
 	if self.takeRef == True or self.ref == None: #if you want a new ref image, this will be True
 	    self.takeRef(self)	
         while (self.quit != True):
