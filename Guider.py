@@ -1,3 +1,5 @@
+#this version hasn't been pushed to the repository yet ._.
+
 #! /usr/bin/python
 """
 Guider.py
@@ -31,21 +33,21 @@ from logger import *
 class Guider(object):
 
     def __init__(self):
-        self.ref= None
-        self.refName = None
-        self.quit = False
-	self.expTime = .5
-	self.readoutOffset = 0
-        self.c = CameraExpose()
-        self.l = Logger()
-        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/'
-        self.fakeOut = True
-        self.currentImage = 2
-        self.logType = 'guider'
-        self.thres = 30
-	self.takeRef = False
+        self.ref= None  #coordinate array for reference image, starts empty
+        self.refName = None #name of reference image
+        self.quit = False #tells program to stop running, changed via start/stopGuiding set functions
+	self.expTime = .5 #exposure time given to camera for iamges
+	self.readoutOffset = 0 #um?
+        self.c = CameraExpose() #
+        self.l = Logger() #Logger class creates logfile of processes
+        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' 
+        self.fakeOut = True #variable to tell class to guide on fake data already in directory
+        self.currentImage = 2 #?
+        self.logType = 'guider' #parameter for Logger class?
+        self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
+	self.takeRef = False #variable can be set to True to get a new reference image taken
 
-    def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None):
+    def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
         if self.fakeOut != True:
             im = self.c.expose(imgName, imExp, imDir)
             self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
@@ -56,7 +58,9 @@ class Guider(object):
         else:
             return 3
 
-    def analyze(self,im):
+    #uses PyGuide function findStars on iamge to get coordinates of all stars in field, stores 
+    #coordinates in an array
+    def analyze(self,im): 
         output=[]
         hdulist = fits.open(im)
         data = hdulist[0].data
@@ -78,6 +82,9 @@ class Guider(object):
             output.append(star_out)
         return output
 
+    #Takes the coordinate array from analyze and finds the difference between these coordinates
+    #and those for the reference image, to get x and y offsets to give to the telescope
+		#do we need to do anything here to convert this to RA and dec?
     def getOffset(self, imCoords):
         self.l.logStr('OffsetInput\t'+str(self.ref)+'\t'+str(imCoords), self.logType)
         x = self.ref[1]
