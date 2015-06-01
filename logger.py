@@ -20,7 +20,7 @@ class Logger(object):
         self.dir = None
 
     def logStr(self, line, dev):
-        f_in = open(time.strftime("%Y%m%d_")+str(dev)+"_.log",'a')
+        f_in = open(time.strftime("%Y%m%d_")+str(dev)+".log",'a')
         t = time.strftime("%Y%m%dT%H%M%S")
         f_in.write("%s\t%s\n" % (t, str(line)))
         f_in.close()

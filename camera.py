@@ -18,11 +18,13 @@ import pyfits
 import subprocess
 import time
 import os
-import Image
+#import Image
 import thread
+from logger import *
 
 class CameraExpose(object):
     def __init__(self):
+        self.l = Logger()
         self.wait = 1.0
         self.status = None
         self.statusDict = {1:'idle', 2:'expose', 3:'reading'}
@@ -50,7 +52,12 @@ class CameraExpose(object):
        
         try:
             
+<<<<<<< HEAD
             subprocess.Popen(['/home/linaro/Guider/ssag', 'image', 'binary', str(exp * 1000)])
+=======
+            self.l.logStr(str('Expose\t/home/linaro/Camera/camera image binary %s' % (str(exp * 1000))), self.logType)
+            #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
             self.status = 2
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
@@ -69,15 +76,17 @@ class CameraExpose(object):
             hdu=pyfits.PrimaryHDU(binary, header = prihdr)  #create a primary header file for the FITS image
             hdulist=pyfits.HDUList([hdu])
 
+            prihdr['EXPTIME'] = str(exp)
+            prihdr['IMAGTYP'] = 'guide'
             # Write the image and header to a FITS file using variable name.
             name = self.checkFile(name)
             hdulist.writeto(name)
-            im = Image.fromarray(binary)
-            im.save("tmp.jpg")
+            #im = Image.fromarray(binary)
+            #im.save("tmp.jpg")
             
-
-            #print "Camera and FITS routines complete" 
+            self.l.logStr('SaveIm\t%s' % name)
             return True
+
         except Exception,e:
             print "failed"
             print str(e)

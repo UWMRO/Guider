@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+#this version hasn't been pushed to the repository yet ._.
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 
 #! /usr/bin/python
 """
@@ -35,16 +39,28 @@ class Guider(object):
         self.ref= None  #coordinate array for reference image, starts empty
         self.refName = None #name of reference image
         self.quit = False #tells program to stop running, changed via start/stopGuiding set functions
+<<<<<<< HEAD
 	self.expTime = 5 #exposure time given to camera for iamges
+=======
+	self.expTime = .5 #exposure time given to camera for iamges
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 	self.readoutOffset = 0 #um?
         self.c = CameraExpose() #
         self.l = Logger() #Logger class creates logfile of processes
         self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' 
+<<<<<<< HEAD
         self.fakeOut =  False #variable to tell class to guide on fake data already in directory
         self.currentImage = 2 #?
         self.logType = 'guider' #parameter for Logger class?
         self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
 	self.tRef = False #variable can be set to True to get a new reference image taken
+=======
+        self.fakeOut = True #variable to tell class to guide on fake data already in directory
+        self.currentImage = 2 #?
+        self.logType = 'guider' #parameter for Logger class?
+        self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
+	self.takeRef = False #variable can be set to True to get a new reference image taken
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
         if self.fakeOut != True:
@@ -101,7 +117,11 @@ class Guider(object):
    
 #goes through coordinate list for current image and finds new coordinates of guide star (chosen in ref image)
 #by comparing coordinates and matching within some given threshole
+<<<<<<< HEAD
     def coordCompare(self, c0, c1, thres): 
+=======
+     def coordCompare(self, c0, c1, thres): 
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
             self.quit = True
             print 'too far off'
@@ -118,7 +138,11 @@ class Guider(object):
 #takes a new reference image. This the coordinate of objects in this image will serve as the target for guiding
 #this function creates a name for the reference image and saves it, takes the image, analyzes it, and saves the
 #coordinate list for that image. It then sets the guide star to be the star at the 0th spot in the coordinate array
+<<<<<<< HEAD
     def takeRef(self):
+=======
+    def takeRef(self)
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
         if self.fakeOut == True: #if has been told to guide on fake data that already exists in the directory, goes into this loop
             self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
@@ -128,12 +152,21 @@ class Guider(object):
         refOptions = self.analyze(self.refName)
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
+<<<<<<< HEAD
         return
 
 #does literally everything -- come up with a good explanation for this, but first we need to break it up
     def run(self): 
 	if self.tRef == True or self.ref == None: #if you want a new ref image, this will be True
 	    self.takeRef()	
+=======
+    return
+
+#does literally everything -- come up with a good explanation for this, but first we need to break it up
+    def run(self): 
+	if self.takeRef == True or self.ref == None: #if you want a new ref image, this will be True
+	    self.takeRef(self)	
+>>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
         while (self.quit != True):
             self.l.logStr('GuidingStarted', self.logType)
             imName = time.strftime("%Y%m%dT%H%M%S.fits")    #take image
