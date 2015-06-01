@@ -27,6 +27,7 @@ class CameraExpose(object):
         self.l = Logger()
         self.wait = 1.0
         self.status = None
+	self.ssag = '/home/linaro/Guider/ssag'
         self.statusDict = {1:'idle', 2:'expose', 3:'reading'}
 
     def expose(self, name, exp, dir):
@@ -51,13 +52,9 @@ class CameraExpose(object):
         name = dir+'/'+str(name)
        
         try:
-            
-<<<<<<< HEAD
-            subprocess.Popen(['/home/linaro/Guider/ssag', 'image', 'binary', str(exp * 1000)])
-=======
-            self.l.logStr(str('Expose\t/home/linaro/Camera/camera image binary %s' % (str(exp * 1000))), self.logType)
-            #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
+             
+            subprocess.Popen([self.ssag, 'image', 'binary', str(exp * 1000)])
+            self.l.logStr(str('Expose\t%s image binary %s' % (self.ssag,str(exp * 1000))), self.logType)
             self.status = 2
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
