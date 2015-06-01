@@ -50,13 +50,13 @@ class CameraExpose(object):
        
         try:
             
-            #subprocess.Popen(['/home/linaro/Camera/camera', 'image', 'binary', str(exp * 1000)])
+            subprocess.Popen(['/home/linaro/Guider/ssag', 'image', 'binary', str(exp * 1000)])
             self.status = 2
             #Pause for the camera to run
             time.sleep(self.wait+float(exp))
             self.status = 1
            
-            binary=np.fromfile('binary',dtype='u1').reshape(1280,1024)   # Open binary file from camera as a numpy array
+	    binary=np.fromfile('binary',dtype='u1').reshape(1024,1280)
 
             # --------------------------
             # Used for testing array procedure, can remove once program is tested on-sky.
@@ -122,4 +122,4 @@ class CameraExpose(object):
 
 if __name__=="__main__":
     c = CameraExpose()
-    c.expose('test',1, None)
+    c.runExpose('test',.1, None)
