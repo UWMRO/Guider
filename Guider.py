@@ -39,37 +39,25 @@ class Guider(object):
         self.ref= None  #coordinate array for reference image, starts empty
         self.refName = None #name of reference image
         self.quit = False #tells program to stop running, changed via start/stopGuiding set functions
-<<<<<<< HEAD
-	self.expTime = 5 #exposure time given to camera for iamges
-=======
 	self.expTime = .5 #exposure time given to camera for iamges
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 	self.readoutOffset = 0 #um?
         self.c = CameraExpose() #
         self.l = Logger() #Logger class creates logfile of processes
         self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' 
-<<<<<<< HEAD
         self.fakeOut =  False #variable to tell class to guide on fake data already in directory
         self.currentImage = 2 #?
         self.logType = 'guider' #parameter for Logger class?
         self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
-	self.tRef = False #variable can be set to True to get a new reference image taken
-=======
-        self.fakeOut = True #variable to tell class to guide on fake data already in directory
-        self.currentImage = 2 #?
-        self.logType = 'guider' #parameter for Logger class?
-        self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
 	self.takeRef = False #variable can be set to True to get a new reference image taken
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
         if self.fakeOut != True:
             im = self.c.runExpose(imgName, imExp, imDir)
             self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
-            #if im == True:
-            #    return
-            #else:
-            #    raise Exception
+            if im == True:
+                return
+            else:
+                raise Exception
         else:
             return 3
 
