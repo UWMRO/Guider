@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-#this version hasn't been pushed to the repository yet ._.
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
-
 #! /usr/bin/python
 """
 Guider.py
@@ -36,25 +31,37 @@ from logger import *
 class Guider(object):
 
     def __init__(self):
-        self.ref= None  #coordinate array for reference image, starts empty
-        self.refName = None #name of reference image
-        self.quit = False #tells program to stop running, changed via start/stopGuiding set functions
-	self.expTime = .5 #exposure time given to camera for iamges
-	self.readoutOffset = 0 #um?
-        self.c = CameraExpose() #
+        self.ref= None  # Variable name to eventually hold the coordinate list for an image
+        self.refName = None # Variable to hold the name of the reference image once taken
+        self.quit = False # Boolean value that will stop operation if True, can be
+			  # changed via the GUI and set via the startGuiding and
+			  # stopGuiding functions.
+	self.expTime = .5 # Image exposure time in seconds, used when calling the 
+			  # CameraExpose object to take images.
+	self.readoutOffset = 0 # Buffer added to sleep time to avoid the error thrown
+			       # if code continues without completing image capture.
+        self.c = CameraExpose() # CameraExpose object, used to take images
         self.l = Logger() #Logger class creates logfile of processes
-        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' 
-        self.fakeOut =  False #variable to tell class to guide on fake data already in directory
+        self.fakeImageDir = '/Users/jwhueh/projects/MRO/guiding_images/gcam_UT150425/' # Directory where fake images are
+										       # stored for testing. 
+        self.fakeOut =  False #
         self.currentImage = 2 #?
         self.logType = 'guider' #parameter for Logger class?
         self.thres = 30 #threshold to match coordinates, to find ref star with coordCompare
 	self.takeRef = False #variable can be set to True to get a new reference image taken
 
+# Takes the class, a string keyword for image type, a string for image
+# name, an integer for exposure tiem, and a string for directory name.
+# The function checks if the variable fakeOut is equal to true first
+# -- if so, ends function and carries out rest of code using existing
+# images. If not, the function takes an image using the CameraExpose
+# object defined in the constructor, and checks that the image has
+# been taken and saved.
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
-        if self.fakeOut != True:
+        if self.fakeOut != True: 
             im = self.c.runExpose(imgName, imExp, imDir)
             self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
-            if im == True:
+            if im == True: #check on completion and save of image exposure
                 return
             else:
                 raise Exception
@@ -105,11 +112,7 @@ class Guider(object):
    
 #goes through coordinate list for current image and finds new coordinates of guide star (chosen in ref image)
 #by comparing coordinates and matching within some given threshole
-<<<<<<< HEAD
-    def coordCompare(self, c0, c1, thres): 
-=======
      def coordCompare(self, c0, c1, thres): 
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
         if np.abs(c0[1] - c1[1]) > float(thres) and np.abs(c0[2] - c1[2]) > float(thres):
             self.quit = True
             print 'too far off'
@@ -126,11 +129,7 @@ class Guider(object):
 #takes a new reference image. This the coordinate of objects in this image will serve as the target for guiding
 #this function creates a name for the reference image and saves it, takes the image, analyzes it, and saves the
 #coordinate list for that image. It then sets the guide star to be the star at the 0th spot in the coordinate array
-<<<<<<< HEAD
     def takeRef(self):
-=======
-    def takeRef(self)
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
 	self.refName = time.strftime("%Y%m%dT%H%M%S") + ".fits"
         if self.fakeOut == True: #if has been told to guide on fake data that already exists in the directory, goes into this loop
             self.refName = self.fakeImageDir+'g' + str(self.currentImage).zfill(4)+'.fits'
@@ -140,21 +139,18 @@ class Guider(object):
         refOptions = self.analyze(self.refName)
         # reference coords are (singluar selection, not robust).  Don't assume the first element is the best.
         self.ref = refOptions[0]
-<<<<<<< HEAD
         return
 
 #does literally everything -- come up with a good explanation for this, but first we need to break it up
-    def run(self): 
-	if self.tRef == True or self.ref == None: #if you want a new ref image, this will be True
-	    self.takeRef()	
-=======
-    return
+ #   def run(self): 
+#	if self.tRef == True or self.ref == None: #if you want a new ref image, this will be True
+#	    self.takeRef()	
+   # return
 
 #does literally everything -- come up with a good explanation for this, but first we need to break it up
     def run(self): 
 	if self.takeRef == True or self.ref == None: #if you want a new ref image, this will be True
 	    self.takeRef(self)	
->>>>>>> 897c427c5b510d560caa9bb4457916ec39b2a40b
         while (self.quit != True):
             self.l.logStr('GuidingStarted', self.logType)
             imName = time.strftime("%Y%m%dT%H%M%S.fits")    #take image
