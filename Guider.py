@@ -53,21 +53,39 @@ class Guider(object):
 	self.takeRef = False # Boolean value set to tell code to take a new reference image.
 			     # Can be changed via the setTakeRef function.
 
-# Takes the class, a string keyword for image type, a string for image
-# name, an integer for exposure tiem, and a string for directory name.
-# The function checks if the variable fakeOut is equal to true first
-# -- if so, ends function and carries out rest of code using existing
-# images.  If not, the function takes an image using the CameraExpose
-# object defined in the constructor, and checks that the image has
-# been taken and saved.
     def takeImage(self, imType = None, imgName = None, imExp = None, imDir = None): 
+        """Takes the class, a string keyword for image type, a string for image
+        name, an integer for exposure tiem, and a string for directory name.
+        The function checks if the variable fakeOut is equal to true first
+        -- if so, ends function and carries out rest of code using existing
+        images.  If not, the function takes an image using the CameraExpose
+        object defined in the constructor, and checks that the image has
+        been taken and saved.
+
+        Args:
+            imType (str): the type of image (bias, dark, object)
+            imgName (str): the name of the image
+            imExp (str): the exposure length in seconds
+            imDir (str):  the directory of the image to be saved
+
+        Returns:
+            int.
+            0 -- image was taken
+            1 -- image not taken
+            2 -- unknown state
+
+        Raises:
+            Exception
+
+        """
         if self.fakeOut != True: 
             im = self.c.runExpose(imgName, imExp, imDir)
             self.l.logStr('Image\t%s %s %s' % (str(imgName), str(imExp), str(imDir)), self.logType)
             if im == True: # check on completion and save of image exposure
-                return
+                return 0
             else:
                 raise Exception("Image exposure not completed") 
+                return 1
         else:
             return 3 # Simply returns if no exception raised
 
