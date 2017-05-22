@@ -16,7 +16,16 @@ A = Red/White
 B = Red
 C = Green/White
 D = Green
-
+Rotational:
+A = Black
+B = Green
+C = Blue
+D = Red
+Linear:
+A = Black (Red/White) 
+B = Red
+C = Black (Green/White)
+D = Green
 Vel Limit = 22321
 Accel = 262144
 Current Limit = 0.31
@@ -25,11 +34,25 @@ Current Limit = 0.31
 class PhidgetMotorController(object):
 	def __init__(self):
 		self.stepper = Stepper()
-		self.stepper.openPhidget()
+		self.steppername = None
+#		self.stepper.openPhidget(418356)
+	#	self.stepper.openPhidget()
 		print('attaching stepper dev ...')
-		self.stepper.waitForAttach(10000)
-		self.DisplayDeviceInfo
+	#	self.stepper.waitForAttach(10000)
+	#	self.DisplayDeviceInfo
 		
+	def MotorChoice(self, name):
+		if name == "linear":
+			self.steppername = 418356
+		elif name == "rotational":
+			self.steppername = 399312
+		else:
+			self.steppername = None
+			print("wrong stepper name")
+		self.stepper.openPhidget(self.steppername)
+		self.stepper.waitForAttach(10000)
+                self.DisplayDeviceInfo
+		return
 
 	def DisplayDeviceInfo(self):
     		print("|- %8s -|- %30s -|- %10d -|- %8d -|" % (self.stepper.isAttached(), self.stepper.getDeviceName(), self.stepper.getSerialNum(), self.stepper.getDeviceVersion()))
@@ -53,7 +76,7 @@ class PhidgetMotorController(object):
 	def moveMotor(self, pos = None):
 		self.stepper.setTargetPosition(0, int(pos))
 		while self.stepper.getCurrentPosition(0) != int(pos) :
-			print self.stepper.getCurrentPosition(0)
+		#	print self.stepper.getCurrentPosition(0)
 			time.sleep(.1)
 
 	def motorPower(self, val = False):
@@ -75,10 +98,23 @@ class PhidgetMotorController(object):
 
 if __name__ == "__main__":
 	p = PhidgetMotorController()
+#	p.setupParm()
+	p.MotorChoice("linear")
 	p.setupParm()
 	p.motorPower(True)
+	p.DisplayDeviceInfo()
 	time.sleep(1)
-	p.moveMotor(30000)
+	p.moveMotor(20000)
+	time.sleep(1)
+	p.moveMotor(0)
+
+	p = PhidgetMotorController()
+	p.MotorChoice("rotational")
+	p.setupParm()
+	p.motorPower(True)
+	p.DisplayDeviceInfo()
+	time.sleep(1)
+	p.moveMotor(20000)
 	time.sleep(1)
 	p.moveMotor(0)
 	p.disconnDev()

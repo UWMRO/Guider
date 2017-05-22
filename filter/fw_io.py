@@ -31,7 +31,7 @@ import time
 class FWIO():
     def __init__(self):
 	self.ser = None
-	self.serPort = '/dev/ttyACM0'
+	self.serPort = '/dev/ttyAMA0'
 
     def log(self):
     	"""
