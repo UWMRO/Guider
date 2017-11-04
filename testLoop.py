@@ -4,6 +4,7 @@
 from ctypes import *
 import sys
 import time
+import subprocess
 #Phidget specific imports
 from Phidgets.PhidgetException import PhidgetErrorCodes, PhidgetException
 from Phidgets.Events.Events import AttachEventArgs, DetachEventArgs, ErrorEventArgs, InputChangeEventArgs, CurrentChangeEventArgs, StepperPositionChangeEventArgs, VelocityChangeEventArgs
@@ -111,27 +112,17 @@ class PhidgetMotorController(object):
 if __name__ == "__main__":
 
 	p = PhidgetMotorController()
-	p.move("linear", 10000)
-	'''
-	p.MotorChoice("linear")
-	p.setupParm()
-	p.motorPower(True)
-	p.DisplayDeviceInfo()
-	time.sleep(1)
-	p.moveMotor(-20000)
-	time.sleep(1)
-	p.moveMotor(0)
-	time.sleep(1)
-	p.moveMotor(10000)
-
-	p = PhidgetMotorController()
-	p.MotorChoice("rotational")
-	p.setupParm()
-	p.motorPower(True)
-	p.DisplayDeviceInfo()
-	time.sleep(1)
-	p.moveMotor(2000)
-	time.sleep(1)
-	p.moveMotor(0)
-	p.disconnDev()
-	'''
+	run = True
+	posList = [-10000, -5000, 0, 5000, 10000]
+	i = 0
+	j = 0
+	numPics = 5
+	while run == True:
+	    while j < len(posList):
+	        p.move("linear", posList[j])
+	        while i < numPics:
+	            subprocess.call('IMAGETIME=`date +"%I%M"`; time ./camera image $IMAGETIME.raw 60000 8; convert -size 1280x1024 -depth 8 gray:$IMAGETIME.raw $IMAGETIME-image.jpg', shell=True)
+		    i = i+1
+		i = 0
+		j = j+1
+	    j = 0
