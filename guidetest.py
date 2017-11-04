@@ -39,6 +39,12 @@ class PhidgetMotorController(object):
     def __init__(self):
 	self.stepper = Stepper()
 	self.steppername = None
+	self.gain = 1
+	self.expScale = 5
+	self.expNum = 1
+	self.minFocus = -2000
+	self.maxFocus = 2000
+	self.focusStep = 100
 	#self.stepper.openPhidget(418356)
 	#	self.stepper.openPhidget()
 	print('attaching stepper dev ...')
@@ -47,22 +53,22 @@ class PhidgetMotorController(object):
 
     def testimage(self):
         #posList = [-10000, -5000, 0, 5000, 10000]
-    	posList = np.arange(-5000, 5000, 100)
+    	posList = np.arange(self.minFocus, self.maxFocus+self.focusStep, self.focusStep)
 	print posList
 	i = 0
     	j = 0
-    	numPics = 5
+    	numPics = self.expNum
     	while run == True:
     	    while j < len(posList):
     	        p.move("linear", posList[j])
     	        while i < numPics:
 		    now = datetime.datetime.now()
-                    fileName = now.strftime("%Y%m%d-%H%M%S")
-                    exp = 15.0
-                    gain = 8
+                    fileName = now.strftime("%Y%m%d-%H%M%S-%f")
+                    exp = self.expScale*(i+1)
+                    gain = self.gain
                     focus = posList[j]
-                    print "Taking %d second image with gain of %d called %s" %(exp, gain, fileName)
-		    subprocess.call('./camera image testimgs/%s.raw %d %d'%(fileName, exp*1000, gain), shell=True)
+                    print "Taking %.2f second image with gain of %d called %s" %(exp, gain, fileName)
+		    subprocess.call('./camera image testimgs/%s.raw %d %d'%(fileName, int(exp*1000), int(gain)), shell=True)
                     self.binarytoFits(fileName, exp, gain, focus)
                     i = i+1
     		i = 0
