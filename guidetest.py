@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+Hardware control code for telescope guide camera
+and associated field rotation and linear focus
+motors.
+'''
+
 #Basic imports
 from ctypes import *
 import os, sys
@@ -35,23 +41,33 @@ Current Limit = 0.31
 """
 
 
-class PhidgetMotorController(object):
+class GuideCamera(object):
     def __init__(self):
 	self.stepper = Stepper()
 	self.steppername = None
+        self.stepperLin = 418356
+        self.stepperRot = 399312
+
 	self.gain = 1
 	self.expScale = 5
 	self.expNum = 1
 	self.minFocus = -2000
 	self.maxFocus = 2000
 	self.focusStep = 100
-	#self.stepper.openPhidget(418356)
-	#	self.stepper.openPhidget()
-	print('attaching stepper dev ...')
-	#	self.stepper.waitForAttach(10000)
-	#	self.DisplayDeviceInfo
 
     def testimage(self):
+	'''
+	Loop through a list of focus positions ranging from
+	self.minFocus to self.maxFocus with a step size of
+	self.focusStep
+
+	At each focus position the camera will take self.expNum images
+	with an exposure time of nX where n ranges (1 -> self.expNum) and
+	X is self.expScale
+
+	The camera gain is set with self.gain, must be int(1-8)
+	'''
+
         #posList = [-10000, -5000, 0, 5000, 10000]
     	posList = np.arange(self.minFocus, self.maxFocus+self.focusStep, self.focusStep)
 	print posList
@@ -77,21 +93,33 @@ class PhidgetMotorController(object):
 	return
 
     def binarytoFits(self, fileName, exp, gain, focus):
-        binary=np.fromfile('testimgs/'+fileName+'.raw', dtype='u1').reshape(1024,1280)
+        '''
+	Routine to convert binary image files to FITS format
+	and append a header with useful information
+	'''
+
+	binary=np.fromfile('testimgs/'+fileName+'.raw', dtype='u1').reshape(1024,1280)
 
         fileName = os.path.split(fileName)[1]
-        #fileName = fileName[:-4]
-        print fileName
         prihdr = self.createHeader(exp, gain, focus)  #create emtpy header information
         hdu=pyfits.PrimaryHDU(binary, header = prihdr)  #create a primary header file for the FITS image
         hdulist=pyfits.HDUList([hdu])
 
         # Write the image and header to a FITS file using variable name.
-
         hdulist.writeto(os.getcwd()+"/testimgs/%s.fits"%fileName, clobber=True)
+
+	#Remove the raw data file after the FITS is created
+	try:
+    	    os.remove('testimgs/'+fileName+'.raw')
+	except OSError:
+    	    pass
+
         return
 
     def createHeader(self, exp, gain, focus):
+	'''
+	FITS header object
+	'''
         prihdr = pyfits.Header()
         prihdr['COMMENT'] = 'MRO Guider Camera'
         prihdr['COMMENT'] = 'Orion Star Shoot Auto Guider'
@@ -109,9 +137,9 @@ class PhidgetMotorController(object):
 
     def MotorChoice(self, name):
 	if name == "linear":
-	    self.steppername = 418356
+	    self.steppername = self.stepperLin
 	elif name == "rotational":
-	    self.steppername = 399312
+	    self.steppername = self.stepperRot
 	else:
 	    self.steppername = None
 	    print("wrong stepper name")
@@ -142,20 +170,11 @@ class PhidgetMotorController(object):
     def moveMotor(self, pos = None):
 	self.stepper.setTargetPosition(0, int(pos))
 	while self.stepper.getCurrentPosition(0) != int(pos) :
-	#	print self.stepper.getCurrentPosition(0)
+	    #print self.stepper.getCurrentPosition(0)
 	    time.sleep(.1)
 
     def motorPower(self, val = False):
 	self.stepper.setEngaged(0,val)
-
-    def filterselect(self, num = None):
-	print "Moving to filter position %d" % num
-	if int(num)<= 6 and int(num)>=1:
-	    self.stepper.setTargetPosition(0, int(num)*6958)
-	elif int(num)>6:
-	    print "Not Valid Filter Number"
-	elif int(num)<1:
-	    print "Not Valid Filter Number"
 
 
     def move(self, motor, pos):
@@ -170,7 +189,7 @@ class PhidgetMotorController(object):
 	self.disconnDev()
 
 if __name__ == "__main__":
-    p = PhidgetMotorController()
+    gc = GuideCamera()
     run = True
     while run == True:
-        p.testimage()
+        gc.testimage()
